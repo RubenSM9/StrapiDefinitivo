@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "articles",
+  "info": {
+    "singularName": "article",
+    "pluralName": "articles",
+    "displayName": "Article"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "StephenCurry": {
+      "type": "string"
+    },
+    "FotoCurry": {
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ],
+      "type": "media",
+      "multiple": true
+    },
+    "Descripcion": {
+      "type": "text"
+    }
+  }
+}
