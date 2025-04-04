@@ -5,11 +5,12 @@ import axios from "axios";
 
 interface Article {
   id: number;
-  Titulo: string;
-  Contenido: string;
-  Portada?: {
-    url: string;
-  };
+  documentId: string;
+  StephenCurry: string;
+  Descripcion: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
 }
 
 export default function Blog() {
@@ -19,12 +20,10 @@ export default function Blog() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:1337/articles") // Strapi 3.8 no usa `/api`
+      .get("http://localhost:1337/api/blog")
       .then((response) => {
-        if (Array.isArray(response.data)) {
-          setArticles(response.data);
-        } else {
-          setError("Error: Datos recibidos no válidos.");
+        if (response.data && response.data.data) {
+          setArticles(response.data.data);
         }
       })
       .catch(() => {
@@ -45,15 +44,9 @@ export default function Blog() {
         {articles.length > 0 ? (
           articles.map((article) => (
             <div key={article.id} style={{ marginBottom: "20px" }}>
-              <h3>{article.Titulo}</h3>
-              {article.Portada?.url && (
-                <img
-                  src={`http://localhost:1337${article.Portada.url}`}
-                  alt={article.Titulo}
-                  style={{ width: "100%", maxWidth: "600px", height: "auto" }}
-                />
-              )}
-              <p>{article.Contenido}</p>
+              <h3>{article.StephenCurry}</h3>
+              <p>{article.Descripcion}</p>
+              <small>Publicado: {new Date(article.publishedAt).toLocaleDateString()}</small>
             </div>
           ))
         ) : (
