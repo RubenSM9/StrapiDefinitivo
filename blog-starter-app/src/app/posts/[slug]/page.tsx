@@ -1,60 +1,70 @@
-'use client';
+// app/posts/[slug]/page.tsx
+"use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import axios from "axios";
 
 interface Article {
   id: number;
-  documentId: string;
-  StephenCurry: string;
-  Descripcion: string;
-  createdAt: string;
+  Titulo: string;
+  Contenido: string;
+  Portada?: {
+    formats: {
+      medium?: { url: string };
+    };
+  };
 }
 
-export default function Blog() {
-  const [articles, setArticles] = useState<Article[]>([]);
+export default function PostPage() {
+  const params = useParams();
+  const slug = params?.slug; // Se hace una comprobación de null/undefined
+
+  const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Verificamos si axios está funcionando correctamente
-    axios
-      .get("http://localhost:1337/api/articles") // Asegúrate de que esta URL es la correcta
-      .then((response) => {
-        console.log(response); // Agregamos un log para ver qué retorna la API
-        if (response.data && Array.isArray(response.data.data)) {
-          setArticles(response.data.data);
-        } else {
-          setError("Error: Datos recibidos no son válidos.");
-        }
-      })
-      .catch((err) => {
-        console.error(err); // Log del error para depuración
-        setError("Hubo un error al cargar los artículos.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+    // Verificamos que slug no sea null ni undefined antes de proceder
+    if (!slug) {
+      setError("Slug no disponible.");
+      setLoading(false);
+      return;
+    }
 
-  if (loading) return <div>Cargando...</div>;
-  if (error) return <div style={{ color: "red" }}>{error}</div>;
+    const fetchArticle = async () => {
+      try {
+        const response = await axios.get(`http://localhost:1337/articles?slug=${slug}`);
+        if (response.data.length > 0) {
+          setArticle(response.data[0]);
+        } else {
+          setError("Artículo no encontrado.");
+        }
+      } catch (err) {
+        setError("Error al obtener el artículo.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticle();
+  }, [slug]);
+
+  if (loading) return <div className="p-8">Cargando artículo...</div>;
+  if (error) return <div className="p-8 text-red-600">{error}</div>;
+  if (!article) return <div className="p-8">Artículo no disponible.</div>;
 
   return (
-    <div>
-      <h2>Artículos de Blog</h2>
-      {articles.length > 0 ? (
-        articles.map((article) => (
-          <div key={article.id} style={{ marginBottom: "20px" }}>
-            <h3>{article.StephenCurry}</h3>
-            <p><strong>ID:</strong> {article.documentId}</p>
-            <p>{article.Descripcion}</p>
-            <small>Publicado el: {new Date(article.createdAt).toLocaleDateString()}</small>
-          </div>
-        ))
-      ) : (
-        <p>No hay artículos disponibles.</p>
+    <div className="p-8">
+      <h1 className="text-3xl font-bold mb-6">{article.Titulo}</h1>
+      {article.Portada?.formats?.medium?.url && (
+        <img
+          src={`http://localhost:1337${article.Portada.formats.medium.url}`}
+          alt={article.Titulo}
+          className="mb-4 w-full rounded-lg"
+        />
       )}
+      <p className="mt-2 whitespace-pre-line">{article.Contenido}</p>
     </div>
   );
 }
